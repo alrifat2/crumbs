@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum Theme {
+    static let panelContentAnimation = Animation.smooth(duration: 0.28)
     static let panelSize = CGSize(width: 680, height: 430)
     static let surfaceSpacing: CGFloat = 8
     static let headerHeight: CGFloat = 54
@@ -13,7 +14,7 @@ enum Theme {
     static let panelRadius: CGFloat = 20
     static let searchFontSize: CGFloat = 24
     static let appNameFont = Font.system(size: 17)
-    static let actionFont = Font.system(size: 15, weight: .medium)
+    static let actionFont = Font.system(size: 12, weight: .medium)
     static let detailFont = Font.system(size: 13)
     static let appIconSize: CGFloat = 32
     static let listInset: CGFloat = 8

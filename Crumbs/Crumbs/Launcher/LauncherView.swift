@@ -36,6 +36,7 @@ struct LauncherView: View {
     @State private var query = ""
     @State private var selection: URL?
     @State private var loaded = false
+    @State private var actions = ApplicationActions()
     @State private var launchError: String?
 
     var body: some View {
@@ -43,9 +44,16 @@ struct LauncherView: View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
                 Image(systemName: "magnifyingglass").foregroundStyle(ink.opacity(Theme.secondaryAlpha))
-                LauncherSearchField(query: $query, move: { move($0, in: matches) },
-                                    submit: { if let selection { open(selection) } },
-                                    cancel: { dismiss(true) })
+                LauncherSearchField(query: $query, move: { delta in
+                    if actions.highlighted != nil { actions.move(delta) } else { move(delta, in: matches) }
+                }, submit: {
+                    if let action = actions.highlighted { perform(action) }
+                    else if let selection { open(selection) }
+                }, cancel: {
+                    if actions.highlighted != nil { actions.highlighted = nil }
+                    else if actions.showsInfo { actions.showsInfo = false }
+                    else { dismiss(true) }
+                })
                     .fixedSize(horizontal: false, vertical: true)
             }
             .font(.system(size: Theme.searchFontSize))
@@ -60,63 +68,19 @@ struct LauncherView: View {
                 .onTapGesture { dismiss(true) }
                 .accessibilityHidden(true)
 
-            ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        Text("Applications").font(Theme.detailFont.bold()).foregroundStyle(ink.opacity(Theme.secondaryAlpha))
-                            .padding(.horizontal, 9).padding(.vertical, 6)
-                        ForEach(matches) { app in
-                            HStack(spacing: 12) {
-                                Image(nsImage: NSWorkspace.shared.icon(forFile: app.url.path))
-                                    .renderingMode(.original)
-                                    .resizable()
-                                    .frame(width: Theme.appIconSize, height: Theme.appIconSize)
-                                Text(app.name).font(Theme.appNameFont).lineLimit(1)
-                                Spacer()
-                                Text("Application").font(Theme.detailFont).foregroundStyle(ink.opacity(Theme.secondaryAlpha))
-                            }
-                            .padding(.horizontal, Theme.rowInset)
-                            .frame(height: Theme.rowHeight)
-                            .background(selection == app.id ? ink.opacity(Theme.selectionAlpha) : Color.clear,
-                                        in: RoundedRectangle(cornerRadius: 8))
-                            .contentShape(Rectangle())
-                            .onTapGesture(count: 2) { open(app.url) }
-                            .onTapGesture { selection = app.id }
-                            .accessibilityElement(children: .combine)
-                            .accessibilityAddTraits(selection == app.id ? [.isSelected, .isButton] : .isButton)
-                            .accessibilityAction { open(app.url) }
-                        }
-                        if matches.isEmpty {
-                            Text(loaded ? "No applications found" : "Loading applications…")
-                                .font(Theme.detailFont).foregroundStyle(ink.opacity(Theme.secondaryAlpha)).padding(10)
-                        }
-                    }
-                    .padding(.horizontal, Theme.listInset)
+            HStack(spacing: 0) {
+                applicationList(matches)
+                    .frame(width: actions.showsInfo ? Theme.panelSize.width / 2 : Theme.panelSize.width)
+                if actions.showsInfo, let app = matches.first(where: { $0.id == selection }) {
+                    ApplicationInfoView(app: app) { actions.showsInfo = false }
+                        .frame(width: Theme.panelSize.width / 2)
+                        .overlay(alignment: .leading) { Divider() }
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
-                .contentMargins(.top, Theme.surfaceSpacing, for: .scrollContent)
-                .contentMargins(.bottom, Theme.footerHeight, for: .scrollContent)
-                .scrollIndicators(.hidden)
-                .onScrollGeometryChange(for: FadeDistances.self) { geometry in
-                    FadeDistances(
-                        top: min(Theme.rowHeight / 2, max(0, geometry.contentOffset.y + geometry.contentInsets.top)),
-                        bottom: min(Theme.footerHeight, max(0, geometry.contentSize.height + geometry.contentInsets.bottom
-                            - geometry.containerSize.height - geometry.contentOffset.y))
-                    )
-                } action: { _, distances in
-                    topFade = distances.top
-                    bottomFade = distances.bottom
-                }
-                .mask {
-                    VStack(spacing: 0) {
-                        LinearGradient(colors: [.clear, .white], startPoint: .top, endPoint: .bottom)
-                            .frame(height: topFade)
-                        Color.white
-                        LinearGradient(colors: [.white, .clear], startPoint: .top, endPoint: .bottom)
-                            .frame(height: bottomFade)
-                    }
-                }
-                .onChange(of: selection) { _, id in if let id { proxy.scrollTo(id) } }
             }
+            .frame(width: Theme.panelSize.width, alignment: .leading)
+            .clipped()
+            .animation(reduceMotion ? nil : Theme.panelContentAnimation, value: actions.showsInfo)
             .overlay(alignment: .bottom) {
                 HStack {
                     Button {
@@ -124,8 +88,8 @@ struct LauncherView: View {
                         dismiss(false)
                     } label: {
                         Image(systemName: "gearshape")
-                            .font(.system(size: 16, weight: .medium))
-                            .frame(width: 30, height: 30)
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(width: 24, height: 24)
                             .glassEffect(.regular.interactive(), in: Circle())
                     }
                     .buttonStyle(.plain)
@@ -140,19 +104,22 @@ struct LauncherView: View {
                     }
                     Spacer()
                     if let selection {
-                        Button { open(selection) } label: {
-                            HStack(spacing: 8) {
-                                Text("Open")
-                                footerSymbol("return")
+                        let actionsVisible = actions.highlighted != nil
+                        HStack(spacing: 0) {
+                            footerButton("Open", action: { open(selection) }) {
+                                footerKey(Image(systemName: "return"))
                             }
-                            .font(Theme.actionFont)
-                            .padding(.horizontal, 13)
-                            .frame(height: 36)
-                            .glassEffect(.regular.interactive(), in: Capsule())
-                            .contentShape(Capsule())
+                            .foregroundStyle(ink.opacity(actionsVisible ? Theme.secondaryAlpha : Theme.primaryAlpha))
+                            footerButton("Actions", action: { actions.highlighted = actions.highlighted == nil ? .open : nil }) {
+                                HStack(spacing: 3) {
+                                    footerKey(Image(systemName: "command"))
+                                    footerKey(Text("K"))
+                                }
+                            }
+                            .foregroundStyle(ink.opacity(actionsVisible ? Theme.primaryAlpha : Theme.secondaryAlpha))
+                            .keyboardShortcut("k", modifiers: .command)
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Open")
+                        .glassEffect(.regular, in: Capsule())
                     }
                 }
                 .padding(.horizontal, Theme.listInset)
@@ -166,6 +133,7 @@ struct LauncherView: View {
         }
         .frame(width: Theme.panelSize.width, height: Theme.panelSize.height)
         .foregroundStyle(ink.opacity(Theme.primaryAlpha))
+        .modifier(ApplicationActionsPresentation(actions: actions, perform: perform))
         .onAppear {
             guard !reduceMotion else {
                 searchPresented = true
@@ -182,7 +150,76 @@ struct LauncherView: View {
             loaded = true
             selection = LauncherSearch.matches(apps, query: query).first?.id
         }
-        .onChange(of: query) { selection = matches.first?.id; launchError = nil }
+        .onChange(of: query) {
+            actions.highlighted = nil
+            selection = matches.first?.id
+            if selection == nil { actions.showsInfo = false }
+            launchError = nil
+        }
+    }
+
+    private func applicationList(_ matches: [LauncherApplication]) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    if !actions.showsInfo {
+                        Text("Applications").font(Theme.detailFont.bold()).foregroundStyle(ink.opacity(Theme.secondaryAlpha))
+                            .padding(.horizontal, 9).padding(.vertical, 6)
+                    }
+                    ForEach(matches) { app in
+                        HStack(spacing: 12) {
+                            Image(nsImage: NSWorkspace.shared.icon(forFile: app.url.path))
+                                .renderingMode(.original)
+                                .resizable()
+                                .frame(width: Theme.appIconSize, height: Theme.appIconSize)
+                            Text(app.name).font(Theme.appNameFont).lineLimit(1)
+                            Spacer()
+                            if !actions.showsInfo {
+                                Text("Application").font(Theme.detailFont).foregroundStyle(ink.opacity(Theme.secondaryAlpha))
+                            }
+                        }
+                        .padding(.horizontal, Theme.rowInset)
+                        .frame(height: Theme.rowHeight)
+                        .background(selection == app.id ? ink.opacity(Theme.selectionAlpha) : Color.clear,
+                                    in: RoundedRectangle(cornerRadius: 8))
+                        .contentShape(Rectangle())
+                        .onTapGesture(count: 2) { open(app.url) }
+                        .onTapGesture { selection = app.id }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityAddTraits(selection == app.id ? [.isSelected, .isButton] : .isButton)
+                        .accessibilityAction { open(app.url) }
+                    }
+                    if matches.isEmpty {
+                        Text(loaded ? "No applications found" : "Loading applications…")
+                            .font(Theme.detailFont).foregroundStyle(ink.opacity(Theme.secondaryAlpha)).padding(10)
+                    }
+                }
+                .padding(.horizontal, Theme.listInset)
+            }
+            .contentMargins(.top, Theme.surfaceSpacing, for: .scrollContent)
+            .contentMargins(.bottom, Theme.footerHeight, for: .scrollContent)
+            .scrollIndicators(.hidden)
+            .onScrollGeometryChange(for: FadeDistances.self) { geometry in
+                FadeDistances(
+                    top: min(Theme.rowHeight / 2, max(0, geometry.contentOffset.y + geometry.contentInsets.top)),
+                    bottom: min(Theme.footerHeight, max(0, geometry.contentSize.height + geometry.contentInsets.bottom
+                        - geometry.containerSize.height - geometry.contentOffset.y))
+                )
+            } action: { _, distances in
+                topFade = distances.top
+                bottomFade = distances.bottom
+            }
+            .mask {
+                VStack(spacing: 0) {
+                    LinearGradient(colors: [.clear, .white], startPoint: .top, endPoint: .bottom)
+                        .frame(height: topFade)
+                    Color.white
+                    LinearGradient(colors: [.white, .clear], startPoint: .top, endPoint: .bottom)
+                        .frame(height: bottomFade)
+                }
+            }
+            .onChange(of: selection) { _, id in if let id { proxy.scrollTo(id) } }
+        }
     }
 
     private var surfaceBackground: some View {
@@ -193,12 +230,27 @@ struct LauncherView: View {
         }
     }
 
-    private func footerSymbol(_ name: String) -> some View {
-        Image(systemName: name)
-            .font(Theme.detailFont)
+    private func footerButton(_ title: LocalizedStringKey, action: @escaping () -> Void,
+                              @ViewBuilder keys: () -> some View) -> some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Text(title)
+                keys()
+            }
+            .font(Theme.actionFont)
+            .padding(.horizontal, 9)
+            .frame(height: 28)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func footerKey(_ symbol: some View) -> some View {
+        symbol
+            .font(.system(size: 10))
             .foregroundStyle(ink.opacity(Theme.secondaryAlpha))
-            .frame(width: 21, height: 21)
-            .overlay { RoundedRectangle(cornerRadius: 6).strokeBorder(ink.opacity(Theme.outlineAlpha)) }
+            .frame(width: 16, height: 16)
+            .overlay { RoundedRectangle(cornerRadius: 4).strokeBorder(ink.opacity(Theme.outlineAlpha)) }
             .accessibilityHidden(true)
     }
 
@@ -206,6 +258,11 @@ struct LauncherView: View {
         if let index = matches.firstIndex(where: { $0.id == selection }) {
             selection = matches[max(0, min(matches.count - 1, index + delta))].id
         }
+    }
+
+    private func perform(_ action: ApplicationAction) {
+        guard let selection else { return }
+        actions.perform(action, on: selection, open: open, dismiss: { dismiss(false) })
     }
 
     private func open(_ url: URL) {

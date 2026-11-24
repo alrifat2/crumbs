@@ -2,13 +2,6 @@
 
 Crumbs is a free, open-source macOS launcher. The current release scope is installed application search. Planned features include commands, files, quicklinks, System Settings search, snippets, emoji, a calculator, clipboard history, Raycast extensions, integrations with the user's preferred tools, and local or hosted AI providers.
 
-## Current launcher
-
-- While Crumbs is running, Control-Shift-Space toggles the launcher. Typing filters apps by name, the arrow keys change selection, and Return opens the selected app. Escape restores focus to the previous app. An outside click dismisses the panel and reaches the clicked app.
-- App discovery runs off the main actor when the launcher opens. It scans standard Applications folders and Safari's system cryptex, deduplicates by resolved URL, and sorts by display name.
-- AppKit owns the floating panel and search field. SwiftUI draws separate blurred search and results surfaces with a 40% scrim and matching inverted ink ramps for Light and Dark. An 8 pt transparent gap separates the surfaces. The footer overlays the fading list. Liquid Glass controls place Settings on the left and Open on the right. The opening animation respects Reduce Motion, and the backdrop respects Reduce Transparency.
-- Settings displays the fixed launcher shortcut. The app delegate registers it with the system at launch.
-
 ## Project Rules
 
 Keep the implementation direct and proportionate to the task. Prefer clear ownership, focused changes, and modern Apple APIs supported by the project's deployment target and toolchain.
@@ -23,9 +16,11 @@ Prefer modern Apple APIs for new code and complete strict concurrency is require
 | ----------------------------- | --------------------------------------------------------------------------- |
 | `Crumbs/Crumbs/App/`          | App entry point, lifecycle, global shortcut, and Settings scene             |
 | `Crumbs/Crumbs/Launcher/`     | Floating panel, search field, and results UI                                |
+| `Crumbs/Crumbs/Actions/`      | Application actions, floating menu, and Get Info pane                       |
 | `Crumbs/Crumbs/AppDiscovery/` | Find installed application bundles for launcher results                     |
 | `Crumbs/Crumbs/DesignSystem/` | Shared visual values in Theme.swift                                         |
 | `Tests/`                      | Swift Testing suites in Tests/{feature name}/, mirroring the source folders |
+| `docs/`                       | Feature documentation                                                       |
 
 Place each feature directly under `Crumbs/Crumbs/{feature name}/` and its suites under `Tests/{feature name}/`. Update this map as application source and tooling are added. Create directories and architectural layers when the implementation needs them.
 
