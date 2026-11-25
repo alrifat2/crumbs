@@ -1,6 +1,6 @@
 # Crumbs
 
-Crumbs is a free, open-source macOS launcher. The current release scope is installed application search. Planned features include commands, files, quicklinks, System Settings search, snippets, emoji, a calculator, clipboard history, Raycast extensions, integrations with the user's preferred tools, and local or hosted AI providers.
+Crumbs is a free, open-source macOS launcher. The current release scope is installed application, file, and System Settings pane search. Planned features include commands, quicklinks, snippets, emoji, a calculator, clipboard history, Raycast extensions, integrations with the user's preferred tools, and local or hosted AI providers.
 
 ## Project Rules
 
@@ -12,24 +12,27 @@ Prefer modern Apple APIs for new code and complete strict concurrency is require
 
 ## Structure
 
-| Path                          | Purpose                                                                     |
-| ----------------------------- | --------------------------------------------------------------------------- |
-| `Crumbs/Crumbs/App/`          | App entry point, lifecycle, global shortcut, and Settings scene             |
-| `Crumbs/Crumbs/Launcher/`     | Floating panel, search field, and results UI                                |
-| `Crumbs/Crumbs/Actions/`      | Application actions, floating menu, and Get Info pane                       |
-| `Crumbs/Crumbs/AppDiscovery/` | Find installed application bundles for launcher results                     |
-| `Crumbs/Crumbs/DesignSystem/` | Shared visual values in Theme.swift                                         |
-| `Tests/`                      | Swift Testing suites in Tests/{feature name}/, mirroring the source folders |
-| `docs/`                       | Feature documentation                                                       |
+| Path | Purpose |
+| --- | --- |
+| `Crumbs/Crumbs/App/` | App entry point, app lifecycle, and Settings scene registration |
+| `Crumbs/Crumbs/Launcher/` | Floating panel, global shortcut, search field, results, and launcher settings UI |
+| `Crumbs/Crumbs/Launcher/Actions/` | Application actions, floating menu, and Get Info pane |
+| `Crumbs/Crumbs/Launcher/Catalog/` | Installed application and System Settings pane discovery |
+| `Crumbs/Crumbs/Launcher/FileSearch/` | Rust filename index, FSEvents updates, Finder Recents, and Swift bridge |
+| `Crumbs/Crumbs/DesignSystem/` | Shared visual values in Theme.swift |
+| `Crumbs/Crumbs/Launcher/FileSearch/Rust/tests/` | Rust file indexer tests |
+| `Tests/` | Swift test suites mirroring the source folders |
+| `docs/` | Feature documentation |
 
-Place each feature directly under `Crumbs/Crumbs/{feature name}/` and its suites under `Tests/{feature name}/`. Update this map as application source and tooling are added. Create directories and architectural layers when the implementation needs them.
+Group code by the feature that owns it. Keep launcher features under `Crumbs/Crumbs/Launcher/` and mirror their paths under `Tests/Launcher/`. Update this map as source and tooling are added.
 
 ## Build and verify
 
-Use Xcode 27 with the Crumbs scheme and My Mac destination. Press Command-R to run the app. From the repository root:
+Use Xcode 27 and Rust with Cargo (verified with Rust 1.87). Build with the Crumbs scheme and My Mac destination. Press Command-R to run the app. From the repository root:
 
 ```sh
 xcodebuild -project Crumbs/Crumbs.xcodeproj -scheme Crumbs -destination 'platform=macOS' build
+Crumbs/Crumbs/Launcher/FileSearch/Rust/build.sh
 swift test
 ```
 

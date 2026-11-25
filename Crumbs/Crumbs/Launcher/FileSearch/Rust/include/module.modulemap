@@ -1,0 +1,4 @@
+module FileSearchCore {
+    header "FileSearchCore.h"
+    export *
+}

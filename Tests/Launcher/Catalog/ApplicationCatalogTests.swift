@@ -12,7 +12,8 @@ struct ApplicationCatalogTests {
         for path in ["Utilities/Zebra.app", "Alpha.app/Contents/Helper.app", ".Hidden.app", "Notes.txt"] {
             try manager.createDirectory(at: root.appending(path: path), withIntermediateDirectories: true)
         }
-        let apps = await LauncherApplication.discover(in: [root, root.appending(path: "Utilities")])
+        let apps = await LauncherApplication.discover(in: [root, root.appending(path: "Utilities"),
+                                                         root.appending(path: "Alpha.app")])
         #expect(apps.map(\.name) == ["Alpha", "Zebra"])
     }
 }

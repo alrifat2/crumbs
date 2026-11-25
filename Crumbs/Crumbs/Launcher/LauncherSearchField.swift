@@ -4,6 +4,9 @@ import SwiftUI
 struct LauncherSearchField: NSViewRepresentable {
     @Environment(\.colorScheme) private var scheme
     @Binding var query: String
+    let fileScope: Bool
+    let enterFolder: () -> Bool
+    let leaveScope: () -> Void
     let move: (Int) -> Void
     let submit: () -> Void
     let cancel: () -> Void
@@ -29,6 +32,9 @@ struct LauncherSearchField: NSViewRepresentable {
         func control(_ control: NSControl, textView: NSTextView, doCommandBy command: Selector) -> Bool {
             guard !textView.hasMarkedText() else { return false }
             switch command {
+            case #selector(NSResponder.insertTab(_:)): return parent.enterFolder()
+            case #selector(NSResponder.deleteBackward(_:)) where parent.fileScope && textView.string.isEmpty:
+                parent.leaveScope()
             case #selector(NSResponder.moveUp(_:)): parent.move(-1)
             case #selector(NSResponder.moveDown(_:)): parent.move(1)
             case #selector(NSResponder.insertNewline(_:)): parent.submit()
@@ -43,7 +49,6 @@ struct LauncherSearchField: NSViewRepresentable {
 
     func makeNSView(context: Context) -> Field {
         let field = Field()
-        field.setAccessibilityLabel("Search apps and commands")
         field.isBordered = false
         field.drawsBackground = false
         field.focusRingType = .none
@@ -55,14 +60,8 @@ struct LauncherSearchField: NSViewRepresentable {
 
     func updateNSView(_ field: Field, context: Context) {
         let ink: NSColor = scheme == .dark ? .white : .black
+        field.setAccessibilityLabel(fileScope ? "Search files and folders" : "Search apps and commands")
         field.textColor = ink.withAlphaComponent(Theme.primaryAlpha)
-        field.placeholderAttributedString = NSAttributedString(
-            string: "Search apps and commands...",
-            attributes: [
-                .font: NSFont.systemFont(ofSize: Theme.searchFontSize),
-                .foregroundColor: ink.withAlphaComponent(Theme.secondaryAlpha)
-            ]
-        )
         if let editor = field.currentEditor() as? NSTextView {
             editor.insertionPointColor = ink
         }

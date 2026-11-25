@@ -17,6 +17,7 @@ final class LauncherWindowController {
             self.outsideClickMonitor = nil
         }
         panel?.orderOut(nil)
+        panel?.contentView = nil
         if restoreFocus { previousApp?.activate() }
         previousApp = nil
     }
@@ -52,6 +53,7 @@ final class LauncherWindowController {
         if !window.isVisible || window.contentView == nil {
             window.contentView = NSHostingView(rootView: LauncherView(hotKeyAvailable: hotKeyAvailable) { [weak self] restore in self?.dismiss(restoreFocus: restore) })
             outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
+                guard NSApp.modalWindow == nil else { return }
                 self?.dismiss(restoreFocus: false)
             }
             window.center()

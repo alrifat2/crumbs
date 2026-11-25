@@ -6,9 +6,7 @@ struct CrumbsApp: App {
 
     var body: some Scene {
         Settings {
-            LabeledContent("Launcher shortcut", value: "⌃⇧Space")
-                .padding(24)
-                .frame(width: 320)
+            LauncherSettingsView()
         }
     }
 }

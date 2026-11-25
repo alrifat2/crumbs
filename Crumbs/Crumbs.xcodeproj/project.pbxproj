@@ -10,9 +10,26 @@
 		B5FAF70A30B3E7C500D3935B /* Crumbs.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Crumbs.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F17E00000000000000000001 /* Exceptions for "Crumbs" folder in "Crumbs" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Launcher/FileSearch/Rust/build.sh,
+				Launcher/FileSearch/Rust/Cargo.lock,
+				Launcher/FileSearch/Rust/Cargo.toml,
+				Launcher/FileSearch/Rust/src/index.rs,
+				Launcher/FileSearch/Rust/src/lib.rs,
+			);
+			target = B5FAF70930B3E7C500D3935B /* Crumbs */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B5FAF70C30B3E7C500D3935B /* Crumbs */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F17E00000000000000000001 /* Exceptions for "Crumbs" folder in "Crumbs" target */,
+			);
 			path = Crumbs;
 			sourceTree = "<group>";
 		};
@@ -56,6 +73,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B5FAF72930B3E7C600D3935B /* Build configuration list for PBXNativeTarget "Crumbs" */;
 			buildPhases = (
+				F17E00000000000000000002 /* Build Rust file search */,
 				B5FAF70630B3E7C500D3935B /* Sources */,
 				B5FAF70730B3E7C500D3935B /* Frameworks */,
 				B5FAF70830B3E7C500D3935B /* Resources */,
@@ -111,6 +129,27 @@
 			);
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F17E00000000000000000002 /* Build Rust file search */ = {
+			isa = PBXShellScriptBuildPhase;
+			inputPaths = (
+				"$(SRCROOT)/Crumbs/Launcher/FileSearch/Rust/build.sh",
+				"$(SRCROOT)/Crumbs/Launcher/FileSearch/Rust/Cargo.toml",
+				"$(SRCROOT)/Crumbs/Launcher/FileSearch/Rust/Cargo.lock",
+				"$(SRCROOT)/Crumbs/Launcher/FileSearch/Rust/src/lib.rs",
+				"$(SRCROOT)/Crumbs/Launcher/FileSearch/Rust/src/index.rs",
+			);
+			name = "Build Rust file search";
+			outputPaths = (
+				"$(TARGET_TEMP_DIR)/FileSearch-$(ARCHS)/libcrumbs_file_search.a",
+			);
+			shellPath = /bin/sh;
+			shellScript = (
+				"\"$SCRIPT_INPUT_FILE_0\" \"$(dirname \"$SCRIPT_OUTPUT_FILE_0\")\"",
+			);
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		B5FAF70630B3E7C500D3935B /* Sources */ = {
@@ -247,18 +286,28 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSDesktopFolderUsageDescription = "Allow Crumbs to include Desktop files in Recents and filename searches.";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "Allow Crumbs to include Documents in Recents and filename searches.";
+				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Allow Crumbs to include Downloads in Recents and filename searches.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSRemovableVolumesUsageDescription = "Crumbs indexes filenames on connected local drives for launcher searches.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"$(TARGET_TEMP_DIR)/FileSearch-$(ARCHS)/libcrumbs_file_search.a",
+					"-framework",
+					CoreServices,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.alrifat.Crumbs;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -266,6 +315,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Crumbs/Launcher/FileSearch/Rust/include";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 			};
@@ -279,18 +329,28 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSDesktopFolderUsageDescription = "Allow Crumbs to include Desktop files in Recents and filename searches.";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "Allow Crumbs to include Documents in Recents and filename searches.";
+				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Allow Crumbs to include Downloads in Recents and filename searches.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSRemovableVolumesUsageDescription = "Crumbs indexes filenames on connected local drives for launcher searches.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"$(TARGET_TEMP_DIR)/FileSearch-$(ARCHS)/libcrumbs_file_search.a",
+					"-framework",
+					CoreServices,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.alrifat.Crumbs;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -298,6 +358,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/Crumbs/Launcher/FileSearch/Rust/include";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 			};

@@ -5,7 +5,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private lazy var hotKey = LauncherHotKey { [weak self] in self?.launcher.toggle() }
 
-    func applicationWillTerminate(_ notification: Notification) { hotKey.unregister() }
+    func applicationWillTerminate(_ notification: Notification) {
+        hotKey.unregister()
+        FileSearch.stopIndexing()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         launcher.hotKeyAvailable = hotKey.register()

@@ -4,7 +4,7 @@ Select an app and click Actions or press ⌘K. The arrowless menu floats above t
 
 - **Open** launches the selected app.
 - **Show in Finder** reveals the app bundle.
-- **Get Info** splits the results area evenly between the app list and details for the current selection. It shows the app icon, name, kind, path, and available version, build, size, dates, and bundle identifier. Size counts regular file contents inside the bundle. Escape or the close button restores the full-width list. The split animates in both directions when Reduce Motion is off.
+- **Get Info** splits the results area evenly between the app list and details for the current selection. It shows the app icon and available Finder details, including location, dates, tags, comments, ownership, and access rules. Bundle details include version, build, identifier, executable, minimum macOS, and copyright when supplied by the app. Size counts regular file contents inside the bundle. Escape or the close button restores the full-width list. The split animates in both directions when Reduce Motion is off.
 - **Quick Look** previews the app bundle using macOS Quick Look.
 - **Share…** opens the macOS sharing picker for the app bundle.
 
